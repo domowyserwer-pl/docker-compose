@@ -1,0 +1,18 @@
+services:
+  db:
+    container_name: postgres # Stała nazwa kontenera
+    image: docker.io/postgres:18.1 # Postgres w wersji 18.1 z oficjalnego repozytorium Docker Hub.
+    shm_size: 256mb # Zwiększa rozmiar pamięci współdzielonej (Shared Memory).
+
+    environment:
+      POSTGRES_PASSWORD: haslo # Hasło dla głównego użytkownika bazy danych.
+      POSTGRES_USER: uzytkownik # Nazwa głównego użytkownika (zamiast domyślnego "postgres").
+      POSTGRES_DB: baza # Tworzy domyślną bazę danych o tej nazwie przy pierwszym uruchomieniu.
+
+    ports:
+      - "5432:5432" # Pozwala na dostęp do bazy z zewnątrz przez port 5432.
+
+    volumes:
+      - ./postgresql:/var/lib/postgresql # Mapuje folder "./postgresql" gdzie Postgres trzyma dane.
+
+    restart: unless-stopped # Automatyczne uruchomienie po restarcie, chyba że zatrzymano ręcznie.
