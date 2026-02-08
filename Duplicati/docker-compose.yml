@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  duplicati:
+    # Pobranie oficjalnego obrazu Duplicati
+    image: docker.io/duplicati/duplicati:latest
+    container_name: duplicati
+    # Restartuje kontener automatycznie po błędzie lub restarcie hosta
+    restart: unless-stopped
+    ports:
+      - "8200:8200"  # Mapowanie portu dla panelu WWW
+    environment:
+      - PUID=0        # Uprawnienia użytkownika (0 = root dla pełnego dostępu)
+      - PGID=0        # Uprawnienia grupy (0 = root)
+      - TZ=Europe/Warsaw
+      # SCHEMAT: Silne hasło (min. 16 znaków: duże/małe litery, cyfry, znaki specjalne np. @#$%^&*)
+      - SETTINGS_ENCRYPTION_KEY=[TWOJE_SILNE_HASLO_SZYFRUJACE_BAZE]
+      # SCHEMAT: Hasło do logowania (min. 12 znaków, najlepiej alfanumeryczne ze znakami specjalnymi)
+      - DUPLICATI__WEBSERVICE_PASSWORD=[TWOJE_HASLO_DO_PANELU_WWW]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      # Dostęp do całego systemu plików hosta (widoczny w kontenerze jako folder /host)
+      - /:/host:rw
+      # Folder na pliki konfiguracyjne i bazy danych Duplicati
+      - ./config:/data
+    command: >
+      # Uruchomienie serwera na porcie 8200 z włączoną auto-aktualizacją
+      duplicati-server --webservice-port=8200 --auto-update=true
