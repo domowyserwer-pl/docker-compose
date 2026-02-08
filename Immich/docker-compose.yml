@@ -1,0 +1,74 @@
+# Nazwa projektu w Docker Compose
+name: immich
+
+services:
+  # Główny serwer aplikacji Immich
+  immich-server:
+    container_name: immich_server # Stała nazwa kontenera dla łatwiejszej identyfikacji
+    # Obraz serwera - używa zmiennej IMMICH_VERSION z pliku .env, domyślnie "release"
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    volumes:
+      # Mapowanie folderu ze zdjęciami (ścieżka z .env na wewnętrzny folder /data)
+      - ${UPLOAD_LOCATION}:/data
+      # Synchronizacja czasu kontenera z czasem systemowym hosta (tylko do odczytu)
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      # Wczytanie zmiennych środowiskowych z zewnętrznego pliku .env
+      - .env
+    ports:
+      # Udostępnienie portu: 2283 na hoście kieruje do 2283 w kontenerze
+      - '2283:2283'
+    depends_on:
+      # Serwer uruchomi się dopiero po starcie bazy danych i serwera Redis
+      - redis
+      - database
+    restart: always # Automatyczny restart kontenera przy błędzie lub restarcie systemu
+    healthcheck:
+      disable: false # Włączenie monitorowania stanu zdrowia kontenera
+
+  # Kontener odpowiedzialny za uczenie maszynowe (rozpoznawanie twarzy, obiektów)
+  immich-machine-learning:
+    container_name: immich_machine_learning # Stała nazwa kontenera dla ML
+    # Obraz ML - podobnie jak wyżej, korzysta z wersji z pliku .env
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    volumes:
+      # Przechowywanie pobranych modeli AI, aby nie ściągać ich po każdym restarcie
+      - model-cache:/cache
+    env_file:
+      # Wczytanie konfiguracji z pliku .env
+      - .env
+    restart: always # Zawsze restartuj w razie awarii
+    healthcheck:
+      disable: false # Monitorowanie stanu zdrowia usługi ML
+
+  # Szybki magazyn danych klucz-wartość (używany jako kolejka zadań i cache)
+  redis:
+    container_name: immich_redis # Stała nazwa kontenera Redis
+    # Użycie konkretnej, bezpiecznej wersji Valkey (alternatywa dla Redis)
+    image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
+    healthcheck:
+      # Test sprawdzający, czy Redis odpowiada na komendę ping
+      test: redis-cli ping || exit 1
+    restart: always # Zawsze restartuj
+
+  # Główna baza danych PostgreSQL z rozszerzeniami wektorowymi (dla AI)
+  database:
+    container_name: immich_postgres # Stała nazwa kontenera bazy danych
+    # Specjalistyczny obraz bazy danych z obsługą wyszukiwania wektorowego
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # Hasło bazy pobrane z .env
+      POSTGRES_USER: ${DB_USERNAME} # Użytkownik bazy pobrany z .env
+      POSTGRES_DB: ${DB_DATABASE_NAME} # Nazwa bazy pobrana z .env
+      POSTGRES_INITDB_ARGS: '--data-checksums' # Dodatkowe zabezpieczenie spójności danych
+    volumes:
+      # Mapowanie miejsca przechowywania plików bazy danych na dysku hosta
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    shm_size: 128mb # Zwiększenie pamięci współdzielonej dla wydajności bazy
+    restart: always # Zawsze restartuj
+    healthcheck:
+      disable: false # Monitorowanie stanu zdrowia bazy danych
+
+# Definicja nazwanych wolumenów (zarządzanych przez Docker)
+volumes:
+  model-cache: # Wolumen dla modeli uczenia maszynowego
