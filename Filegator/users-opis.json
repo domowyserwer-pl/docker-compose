@@ -1,0 +1,173 @@
+{
+  /*
+  GŁÓWNY OBIEKT JSON
+
+  Każdy użytkownik jest zapisany jako element obiektu.
+  Klucze ("1", "2", "3" itd.) to identyfikatory użytkowników w systemie FileGator.
+  Nie mają specjalnego znaczenia poza tym, że muszą być unikalne.
+  */
+
+  "1": {
+    /*
+    username
+    Login użytkownika używany do logowania do FileGatora.
+    */
+    "username": "admin",
+
+    /*
+    name
+    Przyjazna nazwa użytkownika wyświetlana w interfejsie.
+    */
+    "name": "Administrator",
+
+    /*
+    role
+    Rola użytkownika w systemie.
+
+    Możliwe wartości:
+    - admin  → pełna administracja systemem
+    - user   → zwykły użytkownik
+    - guest  → użytkownik anonimowy / bardzo ograniczony
+    */
+    "role": "admin",
+
+    /*
+    homedir
+    Katalog domowy użytkownika.
+
+    "/" oznacza główny katalog repozytorium:
+    /var/www/filegator/repository
+
+    Jeśli ustawisz np.
+    "/folder"
+    użytkownik zobaczy tylko ten katalog.
+    */
+    "homedir": "/",
+
+    /*
+    permissions
+    Lista uprawnień oddzielona znakiem |
+
+    Dostępne uprawnienia:
+    read           → odczyt plików
+    write          → edycja plików
+    upload         → wysyłanie plików
+    download       → pobieranie plików
+    batchdownload  → pobieranie wielu plików naraz
+    zip            → tworzenie archiwów zip
+    chmod          → zmiana uprawnień plików
+    */
+    "permissions": "read|write|upload|download|batchdownload|zip|chmod",
+
+    /*
+    password
+    Hasło zapisane jako HASH bcrypt.
+
+    Format:
+    $2y$10$....
+
+    Oznacza:
+    - algorytm bcrypt
+    - koszt hash (10)
+    - zahashowane hasło
+
+    Hasło NIE jest przechowywane w formie jawnej.
+    */
+    "password": "$2y$10$HASH_USUNIETY_ADMIN"
+  },
+
+
+  "2": {
+    /*
+    Konto gościa.
+    Zwykle używane do logowania anonimowego.
+    */
+
+    "username": "guest",
+    "name": "Guest",
+
+    /*
+    Rola guest oznacza bardzo ograniczone możliwości.
+    */
+    "role": "guest",
+
+    /*
+    Dostęp do całego repozytorium,
+    ale tylko jeśli przyznane są uprawnienia.
+    */
+    "homedir": "/",
+
+    /*
+    Brak uprawnień → użytkownik praktycznie nic nie może zrobić.
+    */
+    "permissions": "",
+
+    /*
+    Brak hasła → konto nie wymaga logowania
+    lub jest wyłączone w zależności od konfiguracji.
+    */
+    "password": ""
+  },
+
+
+  "3": {
+    /*
+    Przykładowy użytkownik systemowy
+    np. używany przez urządzenie (drukarka, skaner itp.)
+    */
+
+    "username": "drukarka",
+    "name": "drukarka",
+
+    /*
+    Zwykły użytkownik
+    */
+    "role": "user",
+
+    /*
+    Katalog domowy użytkownika.
+
+    Użytkownik zobaczy tylko katalog:
+
+    /repository/drukarka
+    */
+    "homedir": "/drukarka",
+
+    /*
+    Pełne uprawnienia do własnego katalogu
+    */
+    "permissions": "read|write|upload|download|batchdownload|zip|chmod",
+
+    /*
+    Hasło bcrypt (usunięte)
+    */
+    "password": "$2y$10$HASH_USUNIETY_DRUKARKA"
+  },
+
+
+  "4": {
+    /*
+    Zwykły użytkownik systemu
+    */
+
+    "username": "uzytkownik",
+    "name": "Użytkownik",
+
+    "role": "user",
+
+    /*
+    Dostęp do całego repozytorium
+    */
+    "homedir": "/",
+
+    /*
+    Pełne uprawnienia
+    */
+    "permissions": "read|write|upload|download|batchdownload|zip|chmod",
+
+    /*
+    Hasło bcrypt (usunięte)
+    */
+    "password": "$2y$10$HASH_USUNIETY_USER"
+  }
+}

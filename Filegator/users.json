@@ -1,0 +1,34 @@
+{
+  "1": {
+    "username": "admin",
+    "name": "Administrator",
+    "role": "admin",
+    "homedir": "/",
+    "permissions": "read|write|upload|download|batchdownload|zip|chmod",
+    "password": "$2y$10$ADMIN_HASH_TUTAJ"
+  },
+  "2": {
+    "username": "guest",
+    "name": "Guest",
+    "role": "guest",
+    "homedir": "/",
+    "permissions": "",
+    "password": ""
+  },
+  "3": {
+    "username": "drukarka",
+    "name": "drukarka",
+    "role": "user",
+    "homedir": "/drukarka",
+    "permissions": "read|write|upload|download|batchdownload|zip|chmod",
+    "password": "$2y$10$DRUKARKA_HASH_TUTAJ"
+  },
+  "4": {
+    "username": "uzytkownik",
+    "name": "Uzytkownik",
+    "role": "user",
+    "homedir": "/",
+    "permissions": "read|write|upload|download|batchdownload|zip|chmod",
+    "password": "$2y$10$USER_HASH_TUTAJ"
+  }
+}

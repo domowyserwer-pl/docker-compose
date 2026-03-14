@@ -1,0 +1,126 @@
+# Wersja składni docker-compose.
+# Określa jakiej wersji specyfikacji używa plik.
+# Wersja 2 jest starsza, ale nadal bardzo stabilna i często używana
+# w prostych konfiguracjach docker-compose.
+version: '2'
+
+# Sekcja definiująca wszystkie kontenery (usługi), które mają być uruchomione
+services:
+
+  # Nazwa usługi. Może być dowolna, ale zwykle odpowiada nazwie aplikacji.
+  # Docker Compose używa tej nazwy np. do tworzenia sieci lub referencji między usługami.
+  filegator:
+
+    # Jawna nazwa kontenera Dockera.
+    # Bez tego docker-compose utworzyłby nazwę np. folder_filegator_1
+    # Dzięki temu kontener będzie miał zawsze nazwę "filegator".
+    container_name: filegator
+
+    # Obraz Dockera, z którego zostanie utworzony kontener.
+    # Pobierany z Docker Hub (jeśli nie ma go lokalnie).
+    # filegator/filegator to gotowy obraz aplikacji FileGator
+    # czyli webowego menedżera plików działającego przez przeglądarkę.
+    image: filegator/filegator
+
+    # Polityka restartu kontenera.
+    # unless-stopped = kontener będzie automatycznie restartowany
+    # po:
+    # - restarcie systemu
+    # - awarii kontenera
+    # ale NIE jeśli zatrzymasz go ręcznie (docker stop).
+    restart: unless-stopped
+
+    # Mapowanie portów między hostem a kontenerem.
+    ports:
+      # Format:
+      # HOST_PORT:CONTAINER_PORT
+      #
+      # Czyli:
+      # port 8080 na twoim serwerze będzie przekierowany
+      # do portu 8080 w kontenerze.
+      #
+      # Dzięki temu aplikacja będzie dostępna w przeglądarce pod adresem:
+      # http://IP_SERWERA:8080
+      - "8080:8080"
+
+    # Sekcja montowania wolumenów (volume bindings).
+    # Pozwala udostępnić katalogi z hosta do kontenera.
+    volumes:
+
+      # Komentarz informacyjny:
+      # poniżej znajdują się przykładowe punkty montowania.
+      # Bardzo ważne jest aby kontener miał prawa odczytu i zapisu
+      # do tych katalogów na hoście.
+      # W przeciwnym razie FileGator nie będzie mógł zapisywać plików.
+
+      # ---------------------------------------------------------
+      # GŁÓWNY KATALOG Z PLIKAMI
+      # ---------------------------------------------------------
+
+      # Montuje katalog z hosta:
+      # /dane/pliki
+      #
+      # do katalogu w kontenerze:
+      # /var/www/filegator/repository
+      #
+      # Ten katalog jest głównym repozytorium plików FileGatora.
+      # Wszystkie pliki widoczne w interfejsie będą pochodziły stąd.
+      - /dane/pliki:/var/www/filegator/repository
+
+      # ---------------------------------------------------------
+      # DODATKOWE KATALOGI JAKO PODFOLDERY
+      # ---------------------------------------------------------
+
+      # Ten katalog hosta:
+      # /dane/pliki/folder1
+      #
+      # będzie widoczny w FileGatorze jako:
+      # /repository/FolderPierwszy
+      #
+      # Czyli użytkownik zobaczy folder o nazwie "FolderPierwszy".
+      - /dane/pliki/folder1:/var/www/filegator/repository/FolderPierwszy
+
+      # Analogicznie:
+      #
+      # katalog hosta:
+      # /dane/pliki/folder2
+      #
+      # będzie widoczny w FileGatorze jako:
+      # /repository/FolderDrugi
+      - /dane/pliki/folder2:/var/www/filegator/repository/FolderDrugi
+
+      # ---------------------------------------------------------
+      # PLIK Z UŻYTKOWNIKAMI
+      # ---------------------------------------------------------
+
+      # Ten wpis montuje lokalny plik users.json
+      # do katalogu konfiguracyjnego FileGatora w kontenerze.
+      #
+      # ./users.json oznacza:
+      # plik w tym samym katalogu co docker-compose.yml
+      #
+      # W tym pliku przechowywane są:
+      # - użytkownicy
+      # - hasła (zahashowane)
+      # - uprawnienia
+      - ./users.json:/var/www/filegator/private/users.json
+
+      # ---------------------------------------------------------
+      # OPCJONALNY PLIK KONFIGURACYJNY
+      # ---------------------------------------------------------
+
+      # Ten wpis jest zakomentowany (# na początku).
+      # Jeśli go odkomentujesz, możesz używać własnej konfiguracji FileGatora.
+      #
+      # ./configuration.php – plik konfiguracyjny na hoście
+      #
+      # /var/www/filegator/configuration.php – miejsce gdzie
+      # FileGator oczekuje pliku konfiguracji w kontenerze.
+      #
+      # Pozwala np. zmieniać:
+      # - ustawienia uploadu
+      # - autoryzację
+      # - widoczność katalogów
+      # - limity
+      #
+      # - ./configuration.php:/var/www/filegator/configuration.php
